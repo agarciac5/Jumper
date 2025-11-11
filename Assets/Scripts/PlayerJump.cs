@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class PlayerJump : MonoBehaviour
 {
+
+    public int extraJumps = 1;
+    private int extraJumpsValue;
     private float jumpBufferTime = 0.15f;
 private float jumpBufferCounter;
     private float coyoteTime = 0.15f;
@@ -21,18 +24,21 @@ private float jumpBufferCounter;
     public float groundCheckRadius = 0.2f;
 
     void Start()
-    {
-        rb = GetComponent<Rigidbody2D>();
-    }
+{
+    rb = GetComponent<Rigidbody2D>();
+    extraJumpsValue = extraJumps; // Set initial jumps
+}
+
 
 void Update()
 {
     isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
 
-    // --- Coyote Time Logic ---
+    // --- Coyote Time & Double Jump Reset ---
     if (isGrounded)
     {
         coyoteTimeCounter = coyoteTime;
+        extraJumpsValue = extraJumps; // Reset double jumps
     }
     else
     {
@@ -50,15 +56,23 @@ void Update()
     }
 
     // --- COMBINED Jump Input Check ---
-    if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f)
+    if (jumpBufferCounter > 0f)
     {
-        rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-
-        // Reset counters so it doesn't jump infinitely
-        jumpBufferCounter = 0f;
-        coyoteTimeCounter = 0f;
+        if (coyoteTimeCounter > 0f) // Priority 1: Ground Jump (uses coyote time)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            coyoteTimeCounter = 0f; // Consume coyote time
+            jumpBufferCounter = 0f; // Consume buffer
+        }
+        else if (extraJumpsValue > 0) // Priority 2: Air Jump
+        {
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce); // You could use a different jumpForce here
+            extraJumpsValue--; // Consume an air jump
+            jumpBufferCounter = 0f; // Consume buffer
+        }
     }
 }
+
 
   // FixedUpdate remains the same as Step 3
     void FixedUpdate()
