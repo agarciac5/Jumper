@@ -18,14 +18,22 @@ public class PlayerJump : MonoBehaviour
 
     void Update()
     {
-        // Check for ground
+          {
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
 
-        // --- Basic Jump Input ---
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
         }
+
+        // --- Variable Jump Height ---
+        if (Input.GetButtonUp("Jump") && rb.linearVelocity.y > 0f)
+        {
+            // If the button is released while jumping, cut the upward velocity
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * 0.5f);
+        }
+    }
+
     }
 
     // Helper function to visualize the ground check radius in the Scene view
