@@ -1,8 +1,9 @@
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
 public class PlayerJump : MonoBehaviour
 {
-
+    public float moveSpeed = 7f;
+    private float moveInput;
     public int extraJumps = 1;
     private int extraJumpsValue;
     private float jumpBufferTime = 0.15f;
@@ -31,7 +32,8 @@ private float jumpBufferCounter;
 
 
 void Update()
-{
+{   moveInput = Input.GetAxisRaw("Horizontal");
+rb.velocity = new Vector2(moveInput * moveSpeed, rb.velocity.y);
     isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
 
     // --- Coyote Time & Double Jump Reset ---
@@ -86,7 +88,19 @@ void Update()
             rb.velocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.fixedDeltaTime;
         }
     }
+    private void OnTriggerEnter2D(Collider2D collision)
+{
+        if (collision.CompareTag("Coins"))
+        {
+            Destroy(collision.gameObject);
 
+        }
+    if (collision.CompareTag("Obstacle"))
+    {
+        Destroy(gameObject);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+}
 
     // Helper function to visualize the ground check radius in the Scene view
     private void OnDrawGizmosSelected()
