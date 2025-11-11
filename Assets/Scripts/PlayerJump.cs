@@ -2,10 +2,19 @@ using UnityEngine;
 
 public class PlayerJump : MonoBehaviour
 {
+    private float jumpBufferTime = 0.15f;
+private float jumpBufferCounter;
+    private float coyoteTime = 0.15f;
+    private float coyoteTimeCounter;
+
+
     private Rigidbody2D rb;
     public float jumpForce = 10f;
 
     // Ground Check variables
+    public float fallMultiplier = 4.5f;
+    public float lowJumpMultiplier = 2f;
+    
     public Transform groundCheck;
     public LayerMask groundLayer;
     private bool isGrounded;
@@ -16,25 +25,54 @@ public class PlayerJump : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
-    void Update()
+void Update()
+{
+    isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+
+    // --- Coyote Time Logic ---
+    if (isGrounded)
     {
-          {
-        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+        coyoteTimeCounter = coyoteTime;
+    }
+    else
+    {
+        coyoteTimeCounter -= Time.deltaTime;
+    }
 
-        if (Input.GetButtonDown("Jump") && isGrounded)
+    // --- Jump Buffering Logic ---
+    if (Input.GetButtonDown("Jump"))
+    {
+        jumpBufferCounter = jumpBufferTime;
+    }
+    else
+    {
+        jumpBufferCounter -= Time.deltaTime;
+    }
+
+    // --- COMBINED Jump Input Check ---
+    if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f)
+    {
+        rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+
+        // Reset counters so it doesn't jump infinitely
+        jumpBufferCounter = 0f;
+        coyoteTimeCounter = 0f;
+    }
+}
+
+  // FixedUpdate remains the same as Step 3
+    void FixedUpdate()
+    {
+        if (rb.velocity.y < 0)
         {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+            rb.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.fixedDeltaTime;
         }
-
-        // --- Variable Jump Height ---
-        if (Input.GetButtonUp("Jump") && rb.linearVelocity.y > 0f)
+        else if (rb.velocity.y > 0 && !Input.GetButton("Jump"))
         {
-            // If the button is released while jumping, cut the upward velocity
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * 0.5f);
+            rb.velocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.fixedDeltaTime;
         }
     }
 
-    }
 
     // Helper function to visualize the ground check radius in the Scene view
     private void OnDrawGizmosSelected()
