@@ -1107,12 +1107,12 @@ MonoBehaviour:
   moveSpeed: 7
   extraJumps: 1
   jumpForce: 10
-  fallMultiplier: 4.5
+  fallMultiplier: 6
   lowJumpMultiplier: 2
   groundCheck: {fileID: 239706664}
   groundLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 8
   groundCheckRadius: 0.2
 --- !u!50 &1094646512
 Rigidbody2D:
